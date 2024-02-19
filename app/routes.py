@@ -5,7 +5,7 @@ from app.controllers.patients_controller import create_patient, get_patients, ge
 from app.models.user_model import User  # Add this import
 from app.models.patients import Patient
 from app.models.appointment import Appointment
-from app.controllers.appointment_controller import create_appointment
+from app.controllers.appointment_controller import create_appointment, get_appointments, get_appointment
 from app import db  # Import 'create_app' and 'db' from __init__.py
 from datetime import datetime
 
@@ -68,39 +68,6 @@ def update_user_route(id):
 def delete_user_route(id):
     """Delete a user by ID."""
     return delete_user(id)
-
-# patient routes
-
-
-# @bp.route('/patient', methods=['POST'])
-# def add_patient_route():
-#     """Create a new patient."""
-#     data = request.json
-#     first_name = data.get('first_name', '')
-#     last_name = data.get('last_name', '')
-#     date_of_birth_str = data.get('date_of_birth', '')  # Renamed to avoid conflicts
-#     gender = data.get('gender', '')
-#     contact_number = data.get('contact_number', '')
-#     address = data.get('address', '')
-#     description = data.get('description', '')
-
-#     # Check if all required fields are provided
-#     if not (first_name and date_of_birth_str and gender and contact_number and address):
-#         return jsonify({'message': 'Error: Missing required fields.'}), 400
-    
-#     try:
-#         # Convert date_of_birth_str to a datetime object
-#         date_of_birth = datetime.strptime(date_of_birth_str, '%d-%m-%Y')
-#     except ValueError:
-#         return jsonify({'message': 'Error: Invalid DateOfBirth format. It should be in the format dd-mm-yyyy.'}), 400
-    
-#     # Create the patient
-#     try:
-#         response, status_code = create_patient(first_name=first_name, last_name=last_name, date_of_birth=date_of_birth, gender=gender, contact_number=contact_number, address=address, description=description)
-#         return jsonify(response), status_code
-#     except Exception as e:
-#         return jsonify({'message': str(e)}), 500  # 500 Internal Server Error status code
-
 
 
 
@@ -187,40 +154,44 @@ def delete_patient_route(id):
 # (Similar structure for other resource routes)
 
 
+# @bp.route('/appointments', methods=['POST'])
+# def add_appointment_route():
+#     data = request.json
+#     appointment_number = data.get('appointment_number', '')
+#     patient_id = data.get('patient_id', '')
+
+#     try:
+#         appointment = Appointment(
+#             appointment_number=appointment_number,
+#             patient_id=patient_id
+#         )
+#         db.session.add(appointment)
+#         db.session.commit()
+#         return jsonify(appointment.serialize()), 201
+#     except SQLAlchemyError as e:
+#         db.session.rollback()
+#         return handle_error(e, 500)
+
+#     response, status_code = create_appointment()
+#     return jsonify(response), status_code
+
 @bp.route('/appointments', methods=['POST'])
-def create_appointment():
+def add_appointment_route():
     data = request.json
-    try:
-        # Create a new appointment object
-        appointment = Appointment(
-            patient_id=data['patient_id'],
-            # Add other appointment attributes as needed
-        )
-        # Add the appointment to the database
-        db.session.add(appointment)
-        db.session.commit()
-        return jsonify({'message': 'Appointment created successfully'}), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    response, status_code = create_appointment(data)
+    return jsonify(response), status_code
+
+# Add other routes as needed
+
 
 # Route to fetch all appointments
-bp.route('/appointments', methods=['GET'])
-def get_appointments():
-    try:
-        appointments = Appointment.query.all()
-        # Serialize the appointments data before returning
-        appointments_data = [appointment.serialize() for appointment in appointments]
-        return jsonify(appointments_data), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+# Route to fetch all appointments
+@bp.route('/appointments', methods=['GET'])
+def get_appointments_route():
+    return get_appointments()
 
-# Route to fetch appointment by ID
-@bp.route('/appointments/<int:id>', methods=['GET'])
-def get_appointment(id):
-    try:
-        appointment = Appointment.query.get(id)
-        if not appointment:
-            return jsonify({'message': 'Appointment not found'}), 404
-        return jsonify(appointment.serialize()), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+# Remove conflicting route
+@bp.route('/appointment/<int:id>')
+def get_appointment_route(id):
+    """Get a specific appointment by ID."""
+    return get_appointment(id)
