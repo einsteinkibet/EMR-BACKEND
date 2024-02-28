@@ -43,10 +43,10 @@ def create_user():
 def get_user_by_username(username):
     return User.query.filter_by(username=username).first()
 
-def login(username, password):
+def login(username, password, role):
     user = get_user_by_username(username)
 
-    if user and user.check_password(password):
+    if user and user.check_password(password) and role == user.role:
         return jsonify({'message': 'Login successful'}), 200
     else:
         return jsonify({'message': 'Invalid username or password'}), 401

@@ -45,9 +45,11 @@ def login_():
     data = request.get_json()
     username = data.get('username', '')
     password = data.get('password', '')
+    role = data.get('role')
+
 
     # Call your login function
-    return login(username, password)
+    return login(username, password,role)
    
 @bp.route('/user', methods=['GET'])
 def get_users_route():
@@ -137,31 +139,6 @@ def update_patient_route(id):
 def delete_patient_route(id):
     """Delete a patient by ID."""
     return delete_patient(id)
-
-# Review routes
-# (Similar structure for other resource routes)
-
-
-# @bp.route('/appointments', methods=['POST'])
-# def add_appointment_route():
-#     data = request.json
-#     appointment_number = data.get('appointment_number', '')
-#     patient_id = data.get('patient_id', '')
-
-#     try:
-#         appointment = Appointment(
-#             appointment_number=appointment_number,
-#             patient_id=patient_id
-#         )
-#         db.session.add(appointment)
-#         db.session.commit()
-#         return jsonify(appointment.serialize()), 201
-#     except SQLAlchemyError as e:
-#         db.session.rollback()
-#         return handle_error(e, 500)
-
-#     response, status_code = create_appointment()
-#     return jsonify(response), status_code
 
 @bp.route('/appointments', methods=['POST'])
 def add_appointment_route():
