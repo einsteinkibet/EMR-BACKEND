@@ -13,7 +13,7 @@ def create_app():
     app = Flask(__name__)
     CORS(app)  
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///properties.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hospital.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize Flask-Bcrypt

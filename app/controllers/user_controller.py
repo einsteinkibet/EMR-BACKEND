@@ -14,35 +14,31 @@ def handle_error(e, status_code):
     return jsonify({'error': str(e)}), status_code
 
 def create_user():
-    from app import bcrypt 
-
     try:
         data = request.get_json()
 
         if 'username' not in data or 'password' not in data or 'role' not in data:
-            return handle_error('Missing username or password in data fields', 400)
+            return {'error': 'Missing username, password, or role in request body'}, 400
 
-        user = User(username=data['username'], role=data['role'])
-        user.password = data['password']  # Use the new setter method
+        username = data['username']
+        role = data['role']
+
+        existing_user = get_user_by_username(username)
+        if existing_user:
+            return {'error': 'Username already exists. Please choose another username.'}, 400
+
+        user = User(username=username, role=role)
+        user.password = data['password']
 
         db.session.add(user)
         db.session.commit()
-        return user.serialize(), 201
+
+        return {'message': 'User created successfully', 'user': user.serialize()}, 201
+
     except SQLAlchemyError as e:
-        logging.error(f"SQLAlchemyError: {str(e)}")
-        db.session.rollback()  # Rollback the changes in case of an error
+        db.session.rollback()
         return handle_error(e, 500)
 
-# Rest of your code...
-
-
-# def get_user_by_username(username):
-#     try:
-#         user = User.query.filter_by(username=username).first()
-#         return user
-#     except SQLAlchemyError as e:
-       
-#         return None
 
 def get_user_by_username(username):
     return User.query.filter_by(username=username).first()
@@ -94,7 +90,7 @@ def update_user(id):
 
 def delete_user(id):
     try:
-        user = User.query.get(id)
+        user = User.qery.get(id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
 

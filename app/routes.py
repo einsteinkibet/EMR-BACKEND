@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
 from app.controllers.user_controller import create_user, get_users, get_user, update_user, delete_user, get_user_by_username, login
-from app.controllers.patients_controller import create_patient, get_patients, get_patient, update_patient, delete_patient
+from app.controllers.patients_controller import create_patient, get_patients, update_patient, delete_patient, get_patient
 from app.models.user_model import User  # Add this import
 from app.models.patients import Patient
 from app.models.appointment import Appointment
@@ -11,7 +11,7 @@ from datetime import datetime
 
 bp = Blueprint('bp', __name__)
 
-# Use 'create_app' from __init__.py to avoid circular import
+
 
 @bp.route('/user', methods=['POST'])
 def add_user_route():
@@ -80,55 +80,43 @@ from datetime import datetime
 
 def handle_error(e, status_code):
     return jsonify({'error': str(e)}), status_code
-
 @bp.route('/patient', methods=['POST'])
-def add_patient_route():
+def create_patient():
     """Create a new patient."""
-    data = request.json
-    first_name = data.get('first_name', '')
-    last_name = data.get('last_name', '')
-    age = data.get('age', '')
-    gender = data.get('gender', '')
-    contact_number = data.get('contact_number', '')
-    address = data.get('address', '')
-    description = data.get('description', '')
-
-    if not (first_name and age and gender and contact_number and address):
-        return jsonify({'message': 'Error: Missing required fields.'}), 400
-
     try:
-    #     # Convert date_of_birth_str to a datetime object
-    #     date_of_birth = datetime.strptime(date_of_birth_str, '%d-%m-%Y')
+        data = request.json
 
-        # Create a new Patient object
-        patient = Patient(
-            first_name=first_name,
-            last_name=last_name,
-            age=age,
-            gender=gender,
-            contact_number=contact_number,
-            address=address,
-            description=description
+        # Convert date_served string to datetime object with date only
+        date_served_str = data.get('date_served', '')
+        if date_served_str:
+            date_served = datetime.strptime(date_served_str, '%Y-%m-%d').date()
+        else:
+            date_served = None
+
+        new_patient = Patient(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            age=data['age'],
+            gender=data['gender'],
+            contact_number=data['contact_number'],
+            address=data['address'],
+            description=data['description'],
+            date_served=date_served,  # Correctly converted to Python date object
+            location_input=data['location_input'],
+            summarized_descrition=data['summarized_descrition'],
+            served_by=data['served_by'],
+            medicine=data['medicine'],
+            disease=data['disease'],
+            doctor=data['doctor']
         )
-
         # Add the new patient to the database
-        db.session.add(patient)
+        db.session.add(new_patient)
         db.session.commit()
+        return jsonify(new_patient.serialize()), 201
 
-        return jsonify(patient.serialize()), 201
-
-    except ValueError:
-        return jsonify({'message': 'Error: Invalid DateOfBirth format. It should be in the format dd-mm-yyyy.'}), 400
-
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.session.rollback()
         return handle_error(e, 500)
-
-
-
-
-
-
 
 @bp.route('/patient')
 def get_patients_route():
