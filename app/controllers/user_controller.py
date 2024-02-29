@@ -90,7 +90,7 @@ def update_user(id):
 
 def delete_user(id):
     try:
-        user = User.qery.get(id)
+        user = User.query.get(id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
