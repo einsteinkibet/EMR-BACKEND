@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from app import db
 from app.models.appointment import Appointment
+from app.models.patients import Patient
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 
@@ -14,16 +15,25 @@ def handle_error(e, status_code):
 def create_appointment(data):
     try:
         data = request.get_json()
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+
+        patient = Patient.query.filter_by(first_name=first_name, last_name=last_name).first()
 
         # Create a new appointment object
         appointment = Appointment(
             appointment_number =data['appointment_number'],
-            patient_id=data['patient_id']
+            patient =patient
         )
         # Add the appointment to the database
         db.session.add(appointment)
         db.session.commit()
-        return appointment.serialize(), 201
+
+        serialized_appointment = appointment.serialize()
+        serialized_appointment['patient_name'] = f"{patient.first_name} {patient.last_name}"
+
+        return jsonify(serialized_appointment), 201
+
 
     except SQLAlchemyError as e:
         logging.error(f"SQLAlchemyError: {str(e)}")

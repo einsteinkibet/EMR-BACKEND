@@ -15,5 +15,5 @@ class Appointment(db.Model):
         return {
             'id': self.id,
             'appointment_number': self.appointment_number,
-            'patient_id': f'{self.patient.first_name} {self.patient.last_name}'
+            'patient_name': f'{self.patient.first_name} {self.patient.last_name}'
         }

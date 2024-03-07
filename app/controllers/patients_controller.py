@@ -50,7 +50,8 @@ def create_patient(first_name, last_name,age , gender, contact_number, address, 
         db.session.add(patient)
         db.session.commit()
         serialized_patient = patient.serialize()
-        return jsonify(serialized_patient), 201
+        return jsonify('Patient added successfully, waiting appointment', serialized_patient), 201
+
 
     except SQLAlchemyError as e:
         # Log the error
@@ -95,7 +96,6 @@ def update_patient(id):
             return jsonify('Patient not found'), 404
 
         description = request.json.get('description', '')
-        location_input = request.json.get('location_input', '')
         medicine = request.json.get('medicine', '')
         disease = request.json.get('disease', '')
         doctor = request.json.get('doctor', '')
@@ -110,7 +110,6 @@ def update_patient(id):
         # Update patient attributes
         patient.description = description
         patient.date_served = date_served
-        patient.location_input = location_input
         patient.medicine = medicine
         patient.disease = disease
         patient.doctor = doctor
